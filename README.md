@@ -47,14 +47,26 @@ iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocola
 ### Для Windows-машин
 
 ```powershell
+# 1. Быстрая настройка WinRM
 winrm quickconfig -quiet
 
-winrm set winrm/config/service/Auth @{Basic="true"}
+# 2. Разрешить незашифрованный трафик (только для доверенной сети!)
+winrm set winrm/config/service '@{AllowUnencrypted="true"}'
 
-winrm set winrm/config/service @{AllowUnencrypted="true"}
+# 3. Включить базовую аутентификацию (логин/пароль)
+winrm set winrm/config/service/auth '@{Basic="true"}'
 
-netsh advfirewall firewall add rule name="WinRM" dir=in action=allow protocol=TCP localport=5985
+# 4. Убедиться, что служба запущена
+Start-Service WinRM
+Set-Service WinRM -StartupType Automati
 
+# 5. Настройка типа сети
+# Сеть изменена с «Общедоступной» на «Частную», в противном случае WinRM блокируется:
+
+Set-NetConnectionProfile -InterfaceIndex <номер> -NetworkCategory Private
+
+# Номер интерфейса можно узнать с помощью:
+Set-NetConnectionProfile -InterfaceIndex <номер> -NetworkCategory Private
 ```
 ### Для Linux-машин (Astra, Ubuntu и др.)
 
