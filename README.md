@@ -66,7 +66,7 @@ Set-Service WinRM -StartupType Automati
 Set-NetConnectionProfile -InterfaceIndex <номер> -NetworkCategory Private
 
 # Номер интерфейса можно узнать с помощью:
-Set-NetConnectionProfile -InterfaceIndex <номер> -NetworkCategory Private
+Get-NetIPConfiguration
 ```
 ### Для Linux-машин (Astra, Ubuntu и др.)
 
