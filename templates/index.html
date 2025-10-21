@@ -1,0 +1,96 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log Visualizer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; font-size: 12px; }
+        th { background-color: #f2f2f2; }
+        .filter { margin-bottom: 15px; }
+        .filter label { display: inline-block; width: 100px; }
+        input, select { padding: 4px; }
+        .stats { background-color: #f9f9f9; padding: 10px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h1>System Logs Viewer</h1>
+
+    <div class="stats">
+        <b>Statistics:</b> Total: {{ stats.total }}, 
+        Hosts: {{ stats.unique_hosts }},
+        Windows: {{ stats.by_os.get('windows', 0) }},
+        Linux: {{ stats.by_os.get('linux', 0) }}
+    </div>
+
+    <form method="GET" class="filter">
+        <label>IP:</label>
+        <input type="text" name="ip_address" value="{{ filters.ip_address }}" placeholder="192.168...">
+        
+        <label>OS:</label>
+        <select name="os_type">
+            <option value="">All</option>
+            {% for os in unique.os_types %}
+            <option value="{{ os }}" {% if filters.os_type == os %}selected{% endif %}>{{ os|upper }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Level:</label>
+        <select name="log_level">
+            <option value="">All</option>
+            {% for lvl in unique.levels %}
+            <option value="{{ lvl }}" {% if filters.log_level == lvl %}selected{% endif %}>{{ lvl }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Source:</label>
+        <input type="text" name="source" value="{{ filters.source }}" placeholder="sshd, EventLog...">
+
+        <button type="submit">Apply</button>
+    </form>
+
+    <div>
+        {% if logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>IP</th>
+                        <th>OS</th>
+                        <th>Level</th>
+                        <th>Source</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.timestamp }}</td>
+                        <td>{{ log.ip_address }}</td>
+                        <td>{{ log.os_type|upper }}</td>
+                        <td>{{ log.log_level }}</td>
+                        <td>{{ log.source }}</td>
+                        <td>{{ (log.message or '')|truncate(200) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div style="margin-top: 15px;">
+                {% if page > 1 %}
+                <a href="?page={{ page-1 }}{% for k, v in filters.items() %}{% if v %}&{{ k }}={{ v }}{% endif %}{% endfor %}">Prev</a>
+                {% endif %}
+                Page {{ page }} of {{ total_pages }}
+                {% if page < total_pages %}
+                <a href="?page={{ page+1 }}{% for k, v in filters.items() %}{% if v %}&{{ k }}={{ v }}{% endif %}{% endfor %}">Next</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <p>No logs found.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
